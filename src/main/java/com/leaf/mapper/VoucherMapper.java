@@ -3,6 +3,9 @@ package com.leaf.mapper;
 import com.leaf.entity.Voucher;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,5 +17,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface VoucherMapper extends BaseMapper<Voucher> {
-
+    List<Voucher> queryVoucherOfShop(@Param("shopId") Long shopId);
 }

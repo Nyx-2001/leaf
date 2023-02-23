@@ -1,5 +1,6 @@
 package com.leaf.service;
 
+import com.leaf.dto.Result;
 import com.leaf.entity.VoucherOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -12,5 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2023-02-21
  */
 public interface IVoucherOrderService extends IService<VoucherOrder> {
-
+    Result seckillVoucher(Long voucherId);
 }
