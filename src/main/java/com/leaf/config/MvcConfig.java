@@ -10,8 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.annotation.Resource;
 
 /**
- * @author starsofocean
- * date 2023/2/21 15:02
+ * @author Hanami
+ * @Date 2023-02-21
  */
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {

@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author starsofocean
- * date 2023/2/21 15:10
+ * @author Hanami
+ * @Date 2023-02-21
  */
 public class LoginInterceptor implements HandlerInterceptor {
     @Override

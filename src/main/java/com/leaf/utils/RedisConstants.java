@@ -1,8 +1,8 @@
 package com.leaf.utils;
 
 /**
- * @author starsofocean
- * date 2023/2/21 15:26
+ * @author Hanami
+ * @Date 2023-02-21
  */
 public class RedisConstants {
     public static final String LOGIN_CODE_KEY = "login:code:";

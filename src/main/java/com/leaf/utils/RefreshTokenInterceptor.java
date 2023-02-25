@@ -16,8 +16,8 @@ import static com.leaf.utils.RedisConstants.LOGIN_USER_KEY;
 import static com.leaf.utils.RedisConstants.LOGIN_USER_TTL;
 
 /**
- * @author starsofocean
- * date 2023/2/21 15:20
+ * @author Hanami
+ * @Date 2023-02-21
  */
 public class RefreshTokenInterceptor implements HandlerInterceptor {
     private StringRedisTemplate stringRedisTemplate;

@@ -3,8 +3,8 @@ package com.leaf.utils;
 import com.leaf.dto.UserDto;
 
 /**
- * @author starsofocean
- * date 2023/2/21 15:11
+ * @author Hanami
+ * @Date 2023-02-21
  */
 public class UserHolder {
     private static final ThreadLocal<UserDto> tl=new ThreadLocal<>();
