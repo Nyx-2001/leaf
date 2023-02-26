@@ -5,8 +5,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * @author starsofocean
- * date 2023/2/21 18:07
+ * @author Hanami
+ * @Date 2023-02-21
  */
 @Data
 public class RedisData {
