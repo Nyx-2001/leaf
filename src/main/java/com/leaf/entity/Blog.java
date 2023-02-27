@@ -55,6 +55,18 @@ public class Blog implements Serializable {
     @ApiModelProperty(value = "评论数量")
     private Integer comments;
 
+    @ApiModelProperty(value = "用户图标")
+    @TableField(exist = false)
+    private String icon;
+
+    @ApiModelProperty(value = "用户姓名")
+    @TableField(exist = false)
+    private String name;
+
+    @ApiModelProperty(value = "是否点赞")
+    @TableField(exist = false)
+    private Boolean isLike;
+
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
