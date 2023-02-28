@@ -12,6 +12,13 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * <p>
@@ -22,31 +29,35 @@ import lombok.experimental.Accessors;
  * @since 2023-02-21
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-@TableName("blog_comments")
-@ApiModel(value="BlogComments对象", description="")
+@Document(collection = "blogcomment")
+@ApiModel(value="BlogComments对象", description="blog评论")
 public class BlogComments implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    @Id
+    private String id;
 
     @ApiModelProperty(value = "用户id")
-    private Long userId;
+    @Indexed
+    @Field("userid")
+    private String userid;
 
-    @ApiModelProperty(value = "探店id")
-    private Long blogId;
+    @ApiModelProperty(value = "笔记id")
+    @Field("blogid")
+    private String blogid;
 
     @ApiModelProperty(value = "关联的1级评论id，如果是一级评论，则值为0")
-    private Long parentId;
+    @Field("parentid")
+    private String parentid;
 
     @ApiModelProperty(value = "回复的评论id")
-    private Long answerId;
+    @Field("answerid")
+    private String answerid;
 
     @ApiModelProperty(value = "回复的内容")
+    @Field("content")
     private String content;
 
     @ApiModelProperty(value = "点赞数")
@@ -56,12 +67,13 @@ public class BlogComments implements Serializable {
     private Integer status;
 
     @ApiModelProperty(value = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
+    @Field("createtime")
+    @CreatedDate
     private LocalDateTime createTime;
 
     @ApiModelProperty(value = "更新时间")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @Field("updatetime")
+    @LastModifiedDate
     private LocalDateTime updateTime;
-
 
 }
