@@ -1,36 +1,24 @@
-package com.leaf.entity;
+package com.leaf.dto;
 
-import com.baomidou.mybatisplus.annotation.*;
-import io.swagger.annotations.ApiModel;
+import com.leaf.entity.Shop;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * <p>
- * 
- * </p>
- *
- * @author Hanami
- * @since 2023-02-21
+ * @Author Hanami
+ * @Date 2023-02-28
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-@TableName("shop")
-@ApiModel(value="Shop对象", description="")
-public class Shop implements Serializable {
+@NoArgsConstructor
+public class ShopDoc implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @ApiModelProperty(value = "商铺名称")
@@ -48,12 +36,6 @@ public class Shop implements Serializable {
     @ApiModelProperty(value = "地址")
     private String address;
 
-    @ApiModelProperty(value = "经度")
-    private Double x;
-
-    @ApiModelProperty(value = "维度")
-    private Double y;
-
     @ApiModelProperty(value = "均价，取整数")
     private Long avgPrice;
 
@@ -69,17 +51,41 @@ public class Shop implements Serializable {
     @ApiModelProperty(value = "营业时间，例如 10:00-22:00")
     private String openHours;
 
+    @ApiModelProperty(value = "经度")
+    private Double x;
+
+    @ApiModelProperty(value = "维度")
+    private Double y;
+
+
+    @ApiModelProperty(value = "位置")
+    private String location;
+
+    @ApiModelProperty(value = "距离")
+    private Object distance;
+
     @ApiModelProperty(value = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
-    @CreatedDate
     private LocalDateTime createTime;
 
     @ApiModelProperty(value = "更新时间")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    @LastModifiedDate
     private LocalDateTime updateTime;
 
-    @TableField(exist = false)
-    private Double distance;
-
+    public ShopDoc(Shop shop) {
+        this.id = shop.getId();
+        this.name = shop.getName();
+        this.typeId = shop.getTypeId();
+        this.images = shop.getImages();
+        this.area = shop.getArea();
+        this.address = shop.getAddress();
+        this.avgPrice = shop.getAvgPrice();
+        this.sold = shop.getSold();
+        this.comments = shop.getComments();
+        this.score = shop.getScore();
+        this.createTime = shop.getCreateTime();
+        this.updateTime = shop.getUpdateTime();
+        this.openHours = shop.getOpenHours();
+        this.x = shop.getX();
+        this.y = shop.getY();
+        this.location = shop.getY()+","+shop.getX();
+    }
 }

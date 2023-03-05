@@ -6,7 +6,6 @@ import com.leaf.utils.CacheClient;
 import com.leaf.utils.RedisIdWorker;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -85,14 +84,14 @@ class LeafApplicationTests {
             List<Shop> value = entry.getValue();
             List<RedisGeoCommands.GeoLocation<String>> locations = new ArrayList<>(value.size());
             // 3.3.写入redis GEOADD key 经度 纬度 member
-            for (Shop shop : value) {
-                // stringRedisTemplate.opsForGeo().add(key, new Point(shop.getX(), shop.getY()), shop.getId().toString());
-                locations.add(new RedisGeoCommands.GeoLocation<>(
-                        shop.getId().toString(),
-                        new Point(shop.getX(), shop.getY())
-                ));
-            }
-            stringRedisTemplate.opsForGeo().add(key, locations);
+//            for (Shop shop : value) {
+//                // stringRedisTemplate.opsForGeo().add(key, new Point(shop.getX(), shop.getY()), shop.getId().toString());
+//                locations.add(new RedisGeoCommands.GeoLocation<>(
+//                        shop.getId().toString(),
+//                        new Point(shop.getX(), shop.getY())
+//                ));
+//            }
+//            stringRedisTemplate.opsForGeo().add(key, locations);
         }
     }
 
