@@ -1,16 +1,16 @@
 server:
-  port: 8080
+  port:
 spring:
   application:
     name: leaf
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url:
-    username: root
+    username:
     password:
   redis:
     host:
-    port: 6379
+    port:
     password:
     lettuce:
       pool:
@@ -20,7 +20,7 @@ spring:
         time-between-eviction-runs: 10s
   rabbitmq:
     host:
-    port: 5672
+    port:
     virtual-host: /
     username:
     password:
@@ -29,6 +29,19 @@ spring:
         prefetch: 1
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
+  data:
+    mongodb:
+      host:
+      database:
+      port:
+      username:
+      password:
+      authentication-database:
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  elasticsearch:
+    uris:
 mybatis-plus:
   type-aliases-package: com.leaf.entity # 别名扫描包
 logging:
