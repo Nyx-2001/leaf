@@ -20,4 +20,11 @@ public interface IShopService extends IService<Shop> {
 
     Result queryShopByType(Integer typeId, Integer current, Double x, Double y);
 
+    void insertOrUpdateBy(Long id);
+
+    void deleteById(Long id);
+
+    Result saveShop(Shop shop);
+
+    Result deleteShopById(Long id);
 }

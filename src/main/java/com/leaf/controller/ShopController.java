@@ -42,11 +42,8 @@ public class ShopController {
      * @return 商铺id
      */
     @PostMapping
-    public Result saveShop(@RequestBody Shop shop) {
-        // 写入数据库
-        shopService.save(shop);
-        // 返回店铺id
-        return Result.ok(shop.getId());
+    public Result save(@RequestBody Shop shop) {
+        return shopService.saveShop(shop);
     }
 
     /**
@@ -58,6 +55,16 @@ public class ShopController {
     public Result updateShop(@RequestBody Shop shop) {
         // 写入数据库
         return shopService.update(shop);
+    }
+
+    /**
+     * 删除商铺
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}")
+    public Result deleteShop(@PathVariable("id") Long id) {
+        return shopService.deleteShopById(id);
     }
 
     /**
