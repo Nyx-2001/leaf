@@ -1,35 +1,43 @@
 package com.leaf.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.lang.UUID;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.leaf.dto.Result;
 import com.leaf.entity.VoucherOrder;
 import com.leaf.mapper.VoucherOrderMapper;
 import com.leaf.service.ISeckillVoucherService;
 import com.leaf.service.IVoucherOrderService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.leaf.utils.RedisIdWorker;
 import com.leaf.utils.UserHolder;
+import com.rabbitmq.client.Channel;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.ReturnedMessage;
+import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.time.Duration;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import static com.leaf.utils.MqConstants.*;
+import static com.leaf.utils.RedisConstants.LOCK_ORDER;
 
 /**
  * <p>
@@ -61,25 +69,33 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     }
 
 
-    @RabbitListener(queuesToDeclare = @Queue("order.queue"))
-    public void listenOrderQueueMsg(Map<String,Object> msg){
+    @RabbitListener(bindings = @QueueBinding(
+            exchange = @Exchange(value = ORDER_EXCHANGE),
+            key = ORDER_KEY,
+            value = @Queue(value = ORDER_QUEUE, durable = "true")))
+    public void listenOrderQueueMsg(Map<String,Object> msg, Message message, Channel channel){
         VoucherOrder voucherOrder = BeanUtil.fillBeanWithMap(msg, new VoucherOrder(), false);
         voucherOrder.setCreateTime(LocalDateTime.now());
         voucherOrder.setUpdateTime(LocalDateTime.now());
         createVoucherOrder(voucherOrder);
+        try {
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void createVoucherOrder(VoucherOrder voucherOrder) {
         Long userId = voucherOrder.getUserId();
         Long voucherId = voucherOrder.getVoucherId();
         // 创建锁对象
-        RLock redisLock = redissonClient.getLock("lock:order:" + userId);
+        RLock redisLock = redissonClient.getLock(LOCK_ORDER + userId);
         // 尝试获取锁
         boolean isLock = redisLock.tryLock();
         // 判断
         if (!isLock) {
             // 获取锁失败，直接返回失败或者重试
-            log.debug("不允许重复下单！");
+            log.error("不允许重复下单！");
             return;
         }
 
@@ -138,7 +154,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         msg.put("id",orderId);
         msg.put("voucherId",voucherId);
         msg.put("userId",userId);
-        rabbitTemplate.convertAndSend("order.queue",msg);
+        CorrelationData correlationData = new CorrelationData(UUID.randomUUID().toString());
+        correlationData.setReturned(new ReturnedMessage(new Message(JSONObject.toJSON(msg).toString().getBytes(StandardCharsets.UTF_8), new MessageProperties()), 100, null, ORDER_EXCHANGE, ORDER_QUEUE));
+        rabbitTemplate.convertAndSend(ORDER_EXCHANGE, ORDER_KEY, msg, correlationData);
     }
 
 

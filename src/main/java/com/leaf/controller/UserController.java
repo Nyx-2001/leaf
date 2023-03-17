@@ -25,7 +25,7 @@ import javax.servlet.http.HttpSession;
  */
 @RestController
 @RequestMapping("/user")
-public class UserController {
+public class    UserController {
 
     @Resource
     private IUserService userService;

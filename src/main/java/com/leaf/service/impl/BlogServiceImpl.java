@@ -2,7 +2,10 @@ package com.leaf.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.leaf.dto.Result;
 import com.leaf.dto.ScrollResult;
 import com.leaf.dto.UserDto;
@@ -11,10 +14,8 @@ import com.leaf.entity.Follow;
 import com.leaf.entity.User;
 import com.leaf.mapper.BlogMapper;
 import com.leaf.service.IBlogService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.leaf.service.IFollowService;
 import com.leaf.service.IUserService;
-import com.leaf.utils.SystemConstants;
 import com.leaf.utils.UserHolder;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.leaf.utils.RedisConstants.BLOG_LIKED_KEY;
 import static com.leaf.utils.RedisConstants.FEED_KEY;
+import static com.leaf.utils.SystemConstants.MAX_PAGE_SIZE;
 
 /**
  * <p>
@@ -53,11 +55,20 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
     @Override
     public Result queryHotBlog(Integer current) {
-        // 根据用户查询
-        Page<Blog> page = query()
-                .orderByDesc("liked")
-                .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
-        // 获取当前页数据
+//        // 根据用户查询
+//        Page<Blog> page = query()
+//                .orderByDesc("liked")
+//                .page(new Page<>(current, MAX_PAGE_SIZE));
+//        // 获取当前页数据
+//        List<Blog> records = page.getRecords();
+        // 查询用户
+//        records.forEach(blog -> {
+//            this.queryBlogUser(blog);
+//            this.isBlogLiked(blog);
+//        });
+        LambdaQueryWrapper<Blog> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.orderByDesc(Blog::getLiked);
+        Page<Blog> page = this.page(new Page<>(current, MAX_PAGE_SIZE), lambdaQueryWrapper);
         List<Blog> records = page.getRecords();
         // 查询用户
         records.forEach(blog -> {
@@ -105,7 +116,10 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         if (score == null) {
             // 3.如果未点赞，可以点赞
             // 3.1.数据库点赞数 + 1
-            boolean isSuccess = update().setSql("liked = liked + 1").eq("id", id).update();
+            LambdaUpdateWrapper<Blog> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.setSql("liked = liked + 1").eq(Blog::getId, id);
+            boolean isSuccess = this.update(lambdaUpdateWrapper);
+//            boolean isSuccess = update().setSql("liked = liked + 1").eq("id", id).update();
             // 3.2.保存用户到Redis的set集合  zadd key value score
             if (isSuccess) {
                 stringRedisTemplate.opsForZSet().add(key, userId.toString(), System.currentTimeMillis());
@@ -113,7 +127,10 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         } else {
             // 4.如果已点赞，取消点赞
             // 4.1.数据库点赞数 -1
-            boolean isSuccess = update().setSql("liked = liked - 1").eq("id", id).update();
+//            boolean isSuccess = update().setSql("liked = liked - 1").eq("id", id).update();
+            LambdaUpdateWrapper<Blog> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.setSql("liked = liked - 1").eq(Blog::getId, id);
+            boolean isSuccess = this.update(lambdaUpdateWrapper);
             // 4.2.把用户从Redis的set集合移除
             if (isSuccess) {
                 stringRedisTemplate.opsForZSet().remove(key, userId.toString());
@@ -134,13 +151,20 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         List<Long> ids = top5.stream().map(Long::valueOf).collect(Collectors.toList());
         String idStr = StrUtil.join(",", ids);
         // 3.根据用户id查询用户 WHERE id IN ( 5 , 1 ) ORDER BY FIELD(id, 5, 1)
-        List<UserDto> userDTOS = userService.query()
-                .in("id", ids).last("ORDER BY FIELD(id," + idStr + ")").list()
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.in(User::getId, ids).last("ORDER BY FIELD(id," + idStr + ")");
+        List<UserDto> userDtoList = userService
+                .list(userLambdaQueryWrapper)
                 .stream()
                 .map(user -> BeanUtil.copyProperties(user, UserDto.class))
                 .collect(Collectors.toList());
+//        List<UserDto> userDTOS = userService.query()
+//                .in("id", ids).last("ORDER BY FIELD(id," + idStr + ")").list()
+//                .stream()
+//                .map(user -> BeanUtil.copyProperties(user, UserDto.class))
+//                .collect(Collectors.toList());
         // 4.返回
-        return Result.ok(userDTOS);
+        return Result.ok(userDtoList);
     }
 
     @Override
